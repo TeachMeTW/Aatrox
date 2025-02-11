@@ -1,8 +1,11 @@
 // src/App.jsx
-import React, { Suspense, useState } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import React, { Suspense, useState, useRef, useEffect } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Html } from '@react-three/drei'
 import { Aatrox } from './components/Aatrox'
+import CameraFollow from './components/CameraFollow'
+import AbilityBar from './components/AbilityBar'
 import * as THREE from 'three'
 import './App.css'
 
@@ -71,6 +74,33 @@ function RightClickHandler({ onRightClick }) {
 function App() {
   const [destination, setDestination] = useState(null)
   const [panOut, setPanOut] = useState(false)
+  const [cameraLocked, setCameraLocked] = useState(false)
+  const aatroxRef = useRef()
+  const controlsRef = useRef()
+  // This ref will hold the champion's position at the moment of unlocking.
+  const lastLockedTargetRef = useRef(new THREE.Vector3())
+
+  // Toggle camera lock/unlock when Y is pressed.
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key.toLowerCase() === 'y') {
+        setCameraLocked((prevLocked) => !prevLocked)
+        console.log('Camera lock toggled to:', !cameraLocked ? 'ON' : 'OFF')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [cameraLocked])
+
+  // When unlocking (cameraLocked becomes false), update OrbitControls' target.
+  useEffect(() => {
+    if (!cameraLocked && controlsRef.current) {
+      // Set the orbit target to the last locked target.
+      controlsRef.current.target.copy(lastLockedTargetRef.current)
+      controlsRef.current.update()
+      console.log('OrbitControls target updated to last locked target:', lastLockedTargetRef.current)
+    }
+  }, [cameraLocked])
 
   // This callback is called from Aatrox when recall finishes.
   const handleRecallComplete = () => {
@@ -79,21 +109,31 @@ function App() {
 
   return (
     <div className="App" style={{ width: '100vw', height: '100vh' }}>
-      <Canvas camera={{ position: [0, 1, 5] }}>
+      <Canvas camera={{ position: [0, 1, 5], near: 0.1, far: 1000 }}>
+
         <ambientLight intensity={0.5} />
         <directionalLight intensity={0.8} position={[10, 10, 5]} />
         <Suspense fallback={<Html center>Loading model...</Html>}>
           <Aatrox
+            ref={aatroxRef}
             position={[0, -3, 0]}
             scale={[0.025, 0.025, 0.025]}
             destination={destination}
             onRecallComplete={handleRecallComplete} // Pass the callback.
           />
         </Suspense>
-        <OrbitControls />
+        {/* When the camera is locked, disable OrbitControls */}
+        <OrbitControls ref={controlsRef} enabled={!cameraLocked} />
         <RightClickHandler onRightClick={setDestination} />
         {panOut && <CameraPanOut />}
+        {/* CameraFollow updates the camera only when locked */}
+        <CameraFollow
+          targetRef={aatroxRef}
+          cameraLocked={cameraLocked}
+          lastLockedTargetRef={lastLockedTargetRef}
+        />
       </Canvas>
+      <AbilityBar />
     </div>
   )
 }

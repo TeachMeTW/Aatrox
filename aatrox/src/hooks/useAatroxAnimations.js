@@ -227,7 +227,8 @@ export function useCombatFlow(
     qCycleRef,
     currentQActionRef,
     currentIntoIdleActionRef,
-    targetPosition
+    targetPosition,
+    onQCycleChange
   ) {
     // Hard-coded global speed multiplier.
     const globalSpeed = 0.5
@@ -323,6 +324,7 @@ export function useCombatFlow(
           }
           // *** ALWAYS increment the Q cycle on Q press ***
           qCycleRef.current = (qCycleRef.current % 3) + 1
+          if (onQCycleChange) onQCycleChange(qCycleRef.current)
           movementState.current = 'q'
           const qIndex = qCycleRef.current
           let groundActionName, intoIdleName

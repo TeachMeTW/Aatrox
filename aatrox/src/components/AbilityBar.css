@@ -1,0 +1,45 @@
+/* AbilityBar.css */
+
+.ability-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ability {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  /* Optionally, you can still have a pointer cursor in case you want to add mouse interactions later */
+  cursor: pointer;
+}
+
+.ability-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.ability img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Dark overlay to simulate ability cooldown/animation */
+.cooldown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  z-index: 2;
+}

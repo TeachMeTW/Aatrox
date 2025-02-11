@@ -1,4 +1,5 @@
-import React, { useRef } from 'react'
+// components/Aatrox.jsx
+import React, { useRef, useImperativeHandle, forwardRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -9,12 +10,15 @@ import {
   useCombatFlow,
 } from '../hooks/useAatroxAnimations'
 
-export function Aatrox(props) {
+function AatroxComponent(props, ref) {
   const group = useRef()
+  // Expose the group to parent via ref.
+  useImperativeHandle(ref, () => group.current)
+
   const { nodes, materials, animations } = useGLTF('/models/Aatrox.glb')
   const { actions, mixer } = useAnimations(animations, group)
 
-  // State refs.
+  // (Your state refs and custom hooks remain unchanged.)
   const recallPlayed = useRef(false)
   const readyForCommands = useRef(false)
   const movementState = useRef('idle')
@@ -23,10 +27,8 @@ export function Aatrox(props) {
   const currentQActionRef = useRef(null)
   const currentIntoIdleActionRef = useRef(null)
 
-  // Use custom hooks.
   useRecallAnimation(props, actions, mixer, recallPlayed, readyForCommands)
   useMovementAnimations(props, actions, mixer, group, movementState, targetPosition, qCycleRef)
-  //useQAnimations(actions, mixer, movementState, qCycleRef, currentQActionRef, currentIntoIdleActionRef, targetPosition)
   useDashAnimation(actions, mixer, movementState, group, targetPosition) 
   useCombatFlow(
     actions,
@@ -35,7 +37,8 @@ export function Aatrox(props) {
     qCycleRef,
     currentQActionRef,
     currentIntoIdleActionRef,
-    targetPosition
+    targetPosition,
+    props.onQCycleChange
   )
 
   return (
@@ -59,5 +62,7 @@ export function Aatrox(props) {
     </group>
   )
 }
+
+export const Aatrox = forwardRef(AatroxComponent)
 
 useGLTF.preload('/models/Aatrox.glb')
