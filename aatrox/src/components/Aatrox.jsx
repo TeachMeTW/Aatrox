@@ -5,7 +5,6 @@ import * as THREE from 'three'
 import {
   useRecallAnimation,
   useMovementAnimations,
-  useQAnimations,
   useDashAnimation,
   useCombatFlow,
 } from '../hooks/useAatroxAnimations'
